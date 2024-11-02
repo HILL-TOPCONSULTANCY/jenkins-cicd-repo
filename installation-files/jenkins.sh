@@ -3,17 +3,30 @@
 
 #Note: Dont use the latest EC2 Linux of 2023 as it doesnt have amazon-linux-extras which was used in the Jenkins installation as per the old AMI.
 
-# Installing Jenkins
-sudo yum update
-sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key # Note: Refer this link to change this key line frequently https://pkg.jenkins.io/redhat-stable/
-sudo yum upgrade
-sudo amazon-linux-extras install java-openjdk11 
-sudo yum install jenkins 
-sudo su && echo "jenkins ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-sudo systemctl enable jenkins
+Prerequisite
+AWS Acccount.
+Create Redhat EC2 t2.medium Instance with 4GB RAM.
+Create Security Group and open Required ports.
+8080 got Jenkins, ..etc
+Attach Security Group to EC2 Instance.
+Install java openJDK 1.8+ for SonarQube version 7.8
+Install Java JDK 1.8+ as Jenkins pre-requisit
+Install other softwares - git, unzip and wget
+```sh
+sudo hostnamectl set-hostname ci
+sudo yum -y install unzip wget tree git
+```
+```sh
+sudo yum install java-11-openjdk -y
+```
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+cd /etc/yum.repos.d/
+sudo curl -O https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo yum -y install jenkins  --nobest
+
+start Jenkins service and verify Jenkins is running
 sudo systemctl start jenkins
+sudo systemctl enable jenkins
 sudo systemctl status jenkins
 
-#Install git
-sudo yum install git
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
