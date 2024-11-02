@@ -1,4 +1,4 @@
-#!/bin/bash
+
 # Hardware requirements: Amazon Linux 2 Kernel 5.10 AMI with
 # Instance Type: mimum t2.medium type instance 
 # Security Group: port 8080(jenkins), 9100 (node-exporter)
