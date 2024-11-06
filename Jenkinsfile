@@ -7,92 +7,81 @@ pipeline {
      }
 
     environment {
-        //Credentials for Prod environment
-        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID') 
+            AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID') 
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
     stages {
-        stage('Git checkout from prod branch') {
+        stage("GIT CHECKOUT") {
             steps {
-                echo 'Cloning project codebase...'
-                git branch: 'main', url: 'https://github.com/HILL-TOPCONSULTANCY/jenkins-cicd-repo.git'
+                echo "Pulling code from codebase"
+                git branch: 'main', url: 'https://github.com/HIIL-TOP-CO-NSULTANCY/jenkins-cicd-repo.git'
                 sh 'ls'
             }
         }
         
-
-        stage('Verifying AWS Configuration'){
+         stage("VERIFY TERRAFORM VERSION") {
             steps {
-                sh 'aws s3 ls'
-            }
-        }
-
-         stage('Verify Terraform Version') {
-            steps {
-                echo 'verifying the terrform version...'
+                echo "verifying the terrform version"
                 sh 'terraform --version'
                
             }
         }
         
-        stage('Terraform init') {
+        stage("INITIALIZING TERRAFORM") {
             steps {
-                echo 'Initiliazing terraform project...'
+                echo "Initiliazing terraform"
                 sh 'terraform init'
                
             }
         }
         
-        stage('Terraform validate') {
+        stage("VALIDATING CONFIGURATION") {
             steps {
-                echo 'Code syntax checking...'
+                echo "validating terraform configuration"
                 sh 'terraform validate'
                 sh 'pwd'
             }
         }
         
-        stage('Terraform plan') {
+        stage('PLANNING') {
             steps {
-                echo 'Terraform plan for the dry run...'
-                sh 'terraform plan -var-file="./prod-values.tfvars"'
+                echo "planning terraform configuration"
+                sh 'terraform plan'
                
             }
         }
         
-        stage('Manual Approval') {
-            steps {
-                script {
-                    def userInput = input(id: 'Proceed1', message: 'Approve Terraform Apply?', parameters: [
-                        [$class: 'TextParameterDefinition', defaultValue: 'Yes', description: 'Type Yes to approve', name: 'Approval']
-                    ])
-                    if (userInput['Approval'] != 'Yes') {
-                        error "Pipeline aborted by user"
-                    }
-                }
-            }
-        }
-        
-        stage('Terraform apply') {
-            steps {
-                echo 'Terraform apply...'
-                sh 'terraform apply -var-file="./prod-values.tfvars" --auto-approve'
-            } 
-        }
-
-        stage('Manual approval to Delete') {
+        stage('Manual approval') {
             steps {
                 
-                input 'Approval required to clean environment'
+                input 'Approval required for deployment'
                
             }
         }
         
-        stage('Terraform Destroy') {
-            steps {
-                echo 'Terraform Destroy...'
-                sh 'terraform destroy -var-file="./prod-values.tfvars" --auto-approve'
-                }
-            }
-    }
 
+        stage("MANUAL VALIDATION") {
+            steps {
+                script {def userinput =input(id: 'Proceed', message:'Approval terraform Apply?', parameters[
+                    [$class: 'TextParameterDefinition', defaultValues: 'Yes', description: 'Type Yes to approve', name:'Approval']
+                ])
+                if (userinput 'Yes'){
+                    error "Pipeline aborted by user"
+                }
+                }
+               
+            }
+        }
+        
+         stage('TERRAFORM APPLY') {
+            steps {
+                echo "applying configuration"
+                sh 'terraform apply --auto-approve'
+            } 
+        }
+post {
+    always  {
+        echo 'pipeline was successful'
+    
+    }
 }
